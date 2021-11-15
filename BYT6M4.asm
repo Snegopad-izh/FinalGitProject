@@ -33,8 +33,6 @@
 ; 2 бит: если 1, то пришло время сбросить АЦП, если 0, то АЦП сброшен недавно
 .equ F_WANT_ADC_RESET = 1
 
-
-
 .def BUFFER = r17
 .def C = r18
 
@@ -47,3 +45,27 @@
 .def A = r25		; Арифметические реистры
 .def B = r26
 .def SAVESREG = r1
+; ----- Формат посылки TIC32 I2C -----
+.equ Slave_address = 0b01111010	; Адрес TIC32
+.equ Co = 7	; Бит количества посылок
+.equ RS = 6	; Бит записи данных в ВИДЕО-ОЗУ TIC32
+; Для маски использовать команду exp2(RS)
+
+; ----- Контраст дисплея -----
+.equ LCD_Contrast = 7
+
+; ----- Смещения оси X для отображения чисел на индикаторе -----
+.equ shag = 19
+.equ X_1 = 0
+.equ X_2 = X_1 + shag
+.equ X_3 = X_2 + shag
+.equ X_4 = X_3 + shag
+.equ X_5 = X_4 + shag
+.equ X_6 = X_5 + shag
+.equ X_7 = X_6 + shag
+.equ Symbol_Rezolution_X = 12 ; Размер символа кодовой таблицы по оси X
+
+; ----- Физические адреса подключения TIC32 -----
+.equ SDA = PD0
+.equ SCL = PD1
+.equ RES = PD2
