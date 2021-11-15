@@ -47,3 +47,9 @@
 .def A = r25		; Арифметические реистры
 .def B = r26
 .def SAVESREG = r1
+
+; ----- Физические адреса подключения AD7788 -----
+.equ MOSI = PB1
+.equ MISO = PB2
+.equ SCK = PB3
+.equ CS = PB0
