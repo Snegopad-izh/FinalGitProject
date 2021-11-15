@@ -69,3 +69,11 @@
 .equ SDA = PD0
 .equ SCL = PD1
 .equ RES = PD2
+
+; ----- Физические адреса подключения Quantum -----
+.equ Q_1W_1 = PC1
+.equ Q_1W_2 = PC4
+.equ CHANGE_1 = PC2
+.equ CHANGE_2 = PC3
+.equ RST_1 = PC0
+.equ RST_2 = PC5
