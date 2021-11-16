@@ -86,3 +86,44 @@
 .equ RST_1 = PC0
 .equ RST_2 = PC5
 
+; ======================================================================================
+; ===== Раздел памяти программ =========================================================
+; ======================================================================================
+.cseg
+
+; ***** Векторы прерываний  
+
+.org 0x000
+		rjmp OnRESET ; По сбросу
+;.org 0x001
+;		rjmp OnINT0 ; По внешнему прерыванию INT0
+;.org 0x002
+		;rjmp OnINT1 ; По внешнему прерыванию INT1
+;.org 0x003
+;		rjmp OnTC1capt ; По захвату TC1
+.org 0x004
+		rjmp OnTC1compA ; По сравнению A ТС1 
+;.org 0x005
+;		rjmp OnTC1compB ; По сравнению B ТС1 
+;.org 0x006
+;		rjmp OnTC1ovf ; По переполнению ТС1 
+;.org 0x007
+;		rjmp OnTC0ovf ; По переполнению ТС0 
+;.org 0x008
+;		rjmp OnSPItxc ; По завершению передачи SPI 
+;.org 0x009
+;		rjmp OnUSARTrxc	; По завершению приёма USART
+;.org 0x00A
+;		rjmp OnUSARTudre ; По очищению UDR USART
+;.org 0x00B
+;		rjmp OnUSARTtxc	; По завершению передачи USART
+;.org 0x00C
+;		rjmp OnANAcomp ; По сигналу компаратора
+;.org 0x00D
+;		rjmp OnINT2 ; По внешнему прерыванию INT2
+;.org 0x00E
+;		rjmp OnTC0comp ; По сравнению TC0
+;.org 0x00F
+;		rjmp OnEErdy ; По готовности EEPROM
+;.org 0x010
+;		rjmp OnSPMrdy ; По готовности памяти программ
