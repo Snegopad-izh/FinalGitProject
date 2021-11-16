@@ -127,3 +127,4 @@
 ;		rjmp OnEErdy ; По готовности EEPROM
 ;.org 0x010
 ;		rjmp OnSPMrdy ; По готовности памяти программ
+
