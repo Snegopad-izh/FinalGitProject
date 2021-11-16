@@ -128,3 +128,167 @@
 ;.org 0x010
 ;		rjmp OnSPMrdy ; По готовности памяти программ
 
+;***** Инициализация uC по сбросу *****
+
+OnRESET:		ldi BUFFER, low(ramend) 	; Настройка стека
+			out SPL, BUFFER				
+ 			ldi BUFFER, high(ramend)
+			out SPH, BUFFER	
+
+; --------------- Настройка портов В/В -----			
+; PORTD: 
+; 		-Quantum:
+;				RX = PD1 (Выход)
+;				1W_1 = PD0 (Вход/выход)
+;				QS = PD3 (Выход)
+;
+;		-TIC32
+;				SDA = PD4 (Выход)
+;				SCL = PD5 (Выход)
+;				RES = PD6 (Выход)
+;
+;		-ADC
+;				CS = PD7 (Выход)
+;				
+; PORTB:		
+;		-ADC	MOSI = PB5 (Выход)
+;				MISO = PB6 (Вход)
+;				SCK = PB7 (Выход)
+; PORTC: 
+; 		-Quantum:
+;				CHANGE_1 = PC0 (Вход)
+;				CHANGE_2 = PC1 (Вход)
+;				1W_2 = PC2 (Вход/выход)	
+
+
+
+			ldi BUFFER, (1<<SDA)+(1<<SCL)+(1<<RES)
+			out DDRD, BUFFER
+			
+			ldi BUFFER, (1<<MOSI)+(1<<SCK)+(0<<MISO)+(1<<CS)
+			out DDRB, BUFFER
+						
+			ldi BUFFER, (0<<CHANGE_1)+(0<<CHANGE_2)+(1<<Q_1W_1)+(1<<Q_1W_2)+(1<<RST_1)+(1<<RST_2)+(0<<OVER_HEAT)
+			out DDRC, BUFFER
+
+			ldi BUFFER, (1<<CHANGE_1)+(1<<CHANGE_2)+(1<<OVER_HEAT)	; Подтяжки на линию ожидания квантума и датчика перегрева
+			out PORTC, BUFFER
+
+			ldi BUFFER, (1<<M_INT)+(1<<M_D0)+(1<<M_D1)+(1<<M_D2)+(1<<M_D3)+(0<<M_TN_OUT)
+			out DDRA, BUFFER
+			cbi PORTA, M_INT
+			cbi PORTA, M_D0
+			cbi PORTA, M_D1
+			cbi PORTA, M_D2
+			cbi PORTA, M_D3
+					
+; ----- Перевод периферии в неактивный режим -----
+			sbi PORTD, SDA			; TIC32
+			sbi PORTD, SCL
+			cbi PORTD, RES
+
+			sbi PORTB, MISO			; ADC
+			sbi PORTB, MOSI
+			sbi PORTB, SCK
+			sbi PORTD, CS
+
+			cbi PORTC, RST_1		; Quantum
+			cbi PORTC, RST_2
+			cbr STATUS, exp2(F_HEATER_ON)
+		
+
+; ----- Настройка периферии -----
+			rcall Timer_1_Set			
+
+			sbi PORTD, RES			; Включаем TIC32
+
+			rcall LCD_Init			; Настраиваем TIC32
+
+			rcall Display_clear		; Показываем пустой дисплей
+			
+			clr A					; Встаём в начало дисплея
+			clr B
+			rcall X_Y_Position
+			
+			rcall ADC_Set			; Настраиваем АЦП
+			
+			sbi PORTC, RST_1			; Quantum
+			sbi PORTC, RST_2
+
+; ----- Очистка регистров и ОЗУ -----
+			clr ZH
+			clr ZL
+			clr XH
+			clr XL
+			clr YH
+			clr YL
+			clr KEYBOARD_1
+			clr KEYBOARD_2			
+			clr STATUS
+			clr STATUS_2
+			
+			ldi ZH, high(RAM_Start)
+			ldi ZL, low(RAM_Start)
+SRAM_Erase_Cycle:
+			st Z+, STATUS
+			cpi ZH, high(Power_Transmit)
+			brne SRAM_Erase_Cycle
+			cpi ZL, low(Power_Transmit)
+			brne SRAM_Erase_Cycle
+
+; ----- Начальные значения мощности
+			
+			ldi ZH, high(Power_EEPROM_Zone_1)
+			ldi ZL, low(Power_EEPROM_Zone_1)
+			rcall EEREAD
+			sts Zone_1_input, C
+			ldi ZH, high(Power_EEPROM_Zone_2)
+			ldi ZL, low(Power_EEPROM_Zone_2)
+			rcall EEREAD
+			sts Zone_2_input, C
+			ldi ZH, high(Power_EEPROM_Zone_3)
+			ldi ZL, low(Power_EEPROM_Zone_3)
+			rcall EEREAD
+			sts Zone_3_input, C
+			ldi ZH, high(Power_EEPROM_Zone_4)
+			ldi ZL, low(Power_EEPROM_Zone_4)
+			rcall EEREAD
+			sts Zone_4_input, C
+			ldi ZH, high(Power_EEPROM_Zone_5)
+			ldi ZL, low(Power_EEPROM_Zone_5)
+			rcall EEREAD
+			sts Zone_5_input, C
+			ldi ZH, high(Power_EEPROM_Zone_6)
+			ldi ZL, low(Power_EEPROM_Zone_6)
+			rcall EEREAD
+			sts Zone_6_input, C
+			
+			rcall Start_Page_Dis
+
+			sbr STATUS, exp2(F_DIS_REL)
+			
+; ********* Скелет основной программы *********
+Main:			rcall Freqently_ADC_Reset
+			rcall ADC_Set			; Настраиваем АЦП
+			rcall Quantum_read
+			rcall ADC_Read
+			rcall Rezult_convert
+			rcall BIN_BCD
+			sbrc STATUS, F_DIS_REL
+			rcall Video_Out
+			sbrc STATUS, F_DIS_REL
+			rcall To_Tiny_Transmit
+			
+
+			sbrc STATUS, F_HEATER_ON
+			rcall Heter_ON_Indication
+			sbrs STATUS, F_HEATER_ON
+			rcall Heter_OFF_Indication
+
+			sbic PINC, OVER_HEAT
+			rcall Over_Heater_Exist
+
+			sbis PINC, OVER_HEAT
+			sbr STATUS, exp2(F_DIS_REL)
+			
+			rjmp Main
