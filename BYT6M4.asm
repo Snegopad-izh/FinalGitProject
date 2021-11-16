@@ -70,7 +70,8 @@
 .equ X_5 = X_4 + shag
 .equ X_6 = X_5 + shag
 .equ X_7 = X_6 + shag
-.equ Symbol_Rezolution_X = 13 ; Размер символа кодовой таблицы по оси X
+
+.equ Symbol_Rezolution_X = 12 ; Размер символа кодовой таблицы по оси X
 
 ; ----- Физические адреса подключения TIC32 -----
 .equ SDA = PD0
