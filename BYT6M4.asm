@@ -105,8 +105,8 @@
 		rjmp OnTC1compA ; По сравнению A ТС1 
 ;.org 0x005
 ;		rjmp OnTC1compB ; По сравнению B ТС1 
-.org 0x006
-		rjmp OnTC1ovf ; По переполнению ТС1 
+;.org 0x006
+;		rjmp OnTC1ovf ; По переполнению ТС1 
 ;.org 0x007
 ;		rjmp OnTC0ovf ; По переполнению ТС0 
 ;.org 0x008
